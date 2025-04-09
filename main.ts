@@ -136,38 +136,65 @@ export default class KindleHighlightsPlugin extends Plugin {
 }
 
 class FilePickerModal extends Modal {
-	callback: (value: File) => void; // Add this line
+	callback: (value: File) => void;
 
-
-	constructor(app: App, callback: (value: File) => void){
+	constructor(app: App, callback: (value: File) => void) {
 		super(app);
 		this.callback = callback;
 	}
 
 	onOpen() {
 		const { contentEl } = this;
-	
+
 		contentEl.createEl("h1", { text: "Import Highlights from HTML file" });
 		contentEl.createEl("br");
-		contentEl.createEl("p", { text: "Select your kindle html file:"});
+		contentEl.createEl("p", { text: "Select your Kindle HTML file:" });
+
+		// File input
 		const input = contentEl.createEl("input", {
 			type: "file",
 			attr: { single: "" },
 		});
 		contentEl.createEl("br");
 		contentEl.createEl("br");
-		
-	
 
+		// Drag-and-drop area
+		const dropArea = contentEl.createEl("div", {
+			cls: "drop-area",
+			text: "Drag and drop your file here",
+		});
+		dropArea.style.border = "2px dashed #ccc";
+		dropArea.style.padding = "20px";
+		dropArea.style.textAlign = "center";
+		dropArea.style.marginBottom = "20px";
+
+		dropArea.addEventListener("dragover", (event) => {
+			event.preventDefault();
+			dropArea.style.borderColor = "#888";
+		});
+
+		dropArea.addEventListener("dragleave", () => {
+			dropArea.style.borderColor = "#ccc";
+		});
+
+		dropArea.addEventListener("drop", (event) => {
+			event.preventDefault();
+			dropArea.style.borderColor = "#ccc";
+
+			if (event.dataTransfer?.files.length) {
+				const file = event.dataTransfer.files[0];
+				this.callback(file);
+				this.close();
+			}
+		});
+
+		// Button
 		const button = contentEl.createEl("button", {
 			text: "Import Highlights from the file",
 		});
 		button.addEventListener("click", () => {
-			const reader = new FileReader();
-
 			if (input.files) {
-				reader.readAsText(input.files[0]);	
-				this.callback(input.files[0]);	
+				this.callback(input.files[0]);
 				this.close();
 			}
 		});
