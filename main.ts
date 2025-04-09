@@ -53,13 +53,19 @@ export default class KindleHighlightsPlugin extends Plugin {
 
 			const pageMatch = $(element)
 				.text()
-				.match(/(Page|Location) (\d+)/);
+				.match(/(Page|Página) (\d+)/);
 			const pageNumber = pageMatch ? pageMatch[2] : null;
+
+			const positionMatch = $(element)
+				.text()
+				.match(/Posición (\d+)|Position (\d+)/);
+			const positionNumber = positionMatch ? positionMatch[1] : null;
+
 			const noteText = $(element).next(".noteText").text().trim();
 
-			content += `${noteText}\n- ${pageMatch ? pageMatch[1] : ""} ${
-				pageNumber || ""
-			}\n\n`;
+			content += `> ${noteText}\n- Page: ${
+				pageNumber || "N/A"
+			}, Position: ${positionNumber || "N/A"}\n\n`;
 
 			if (
 				$(element).next().next().children("span").length === 0 &&
