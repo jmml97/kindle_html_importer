@@ -110,16 +110,23 @@ export default class KindleHighlightsPlugin extends Plugin {
 				// Split content at the "Highlights" header
 				const splitContent = existingContent.split("## Highlights");
 				if (splitContent.length > 1) {
-					// Preserve content before "Highlights" and append new content
+					// Preserve content before "Highlights"
 					existingContent = splitContent[0] + "## Highlights\n\n";
+				} else {
+					// If "Highlights" header is not found, append it
+					existingContent += "## Highlights\n\n";
 				}
+			} else {
+				// If file doesn't exist, add frontmatter and "Highlights" header
+				existingContent = `${frontmatter}\n\n## Highlights\n\n`;
 			}
 
+			// Write the updated content
 			await this.app.vault.adapter.write(
 				filePath,
 				`${existingContent}${content}`
 			);
-			new Notice("Highlights appended to the existing file");
+			new Notice("Highlights updated in the file");
 		} catch (error) {
 			if (error.code === "ENOENT") {
 				new Notice(
