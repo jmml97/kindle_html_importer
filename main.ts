@@ -100,18 +100,33 @@ export default class KindleHighlightsPlugin extends Plugin {
 		const frontmatter = `---\nauthor: "[[${author}]]"\nhighlights: ${highlightsCounter}\n---\n`;
 
 		try {
-			await this.app.vault.create(
-				`${this.settings.path}/${bookTitle}.md`,
-				`${frontmatter}\n\n## Highlights \n\n${content}`
+			const filePath = `${this.settings.path}/${bookTitle}.md`;
+			let existingContent = "";
+
+			if (await this.app.vault.adapter.exists(filePath)) {
+				// Read existing file content
+				existingContent = await this.app.vault.adapter.read(filePath);
+
+				// Split content at the "Highlights" header
+				const splitContent = existingContent.split("## Highlights");
+				if (splitContent.length > 1) {
+					// Preserve content before "Highlights" and append new content
+					existingContent = splitContent[0] + "## Highlights\n\n";
+				}
+			}
+
+			await this.app.vault.adapter.write(
+				filePath,
+				`${existingContent}${content}`
 			);
-			new Notice("File created");
+			new Notice("Highlights appended to the existing file");
 		} catch (error) {
-			
-			if(error.code === "ENOENT")
-			{
-				new Notice("Invalid path. Please select a valid folder in the plugin settings");
-			}else{
-				new Notice("File already exists");
+			if (error.code === "ENOENT") {
+				new Notice(
+					"Invalid path. Please select a valid folder in the plugin settings"
+				);
+			} else {
+				new Notice("An error occurred while saving the file");
 			}
 		}
 	}
