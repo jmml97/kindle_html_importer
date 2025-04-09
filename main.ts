@@ -48,42 +48,54 @@ export default class KindleHighlightsPlugin extends Plugin {
 		let content = "";
 		let highlightsCounter = 0;
 
-		$(".noteHeading").each((index, element) => {
-			if ($(element).children("span").length !== 1) return;
+			$(".sectionHeading, .noteHeading").each((index, element) => {
+				if ($(element).hasClass("sectionHeading")) {
+					// Process chapter titles
+					const chapterTitle = $(element).text().trim();
+					if (chapterTitle) {
+						content += `# ${chapterTitle}\n\n`;
+					}
+				} else if ($(element).hasClass("noteHeading")) {
+					// Process notes
+					if ($(element).children("span").length !== 1) return;
 
-			const pageMatch = $(element)
-				.text()
-				.match(/(Page|Página) (\d+)/);
-			const pageNumber = pageMatch ? pageMatch[2] : null;
+					const pageMatch = $(element)
+						.text()
+						.match(/(Page|Página) (\d+)/);
+					const pageNumber = pageMatch ? pageMatch[2] : null;
 
-			const positionMatch = $(element)
-				.text()
-				.match(/Posición (\d+)|Position (\d+)/);
-			const positionNumber = positionMatch ? positionMatch[1] : null;
+					const positionMatch = $(element)
+						.text()
+						.match(/Posición (\d+)|Position (\d+)/);
+					const positionNumber = positionMatch
+						? positionMatch[1]
+						: null;
 
-			const noteText = $(element).next(".noteText").text().trim();
+					const noteText = $(element).next(".noteText").text().trim();
 
-			content += `> ${noteText}\n- Page: ${
-				pageNumber || "N/A"
-			}, Position: ${positionNumber || "N/A"}\n\n`;
+					content += `> ${noteText}\n- Page: ${
+						pageNumber || "N/A"
+					}, Position: ${positionNumber || "N/A"}\n\n`;
 
-			if (
-				$(element).next().next().children("span").length === 0 &&
-				!$(element).next().next().hasClass("sectionHeading") &&
-				$(element).next().next().length !== 0
-			) {
-				const userNote = $(element)
-					.next()
-					.next()
-					.next(".noteText")
-					.text()
-					.trim();
-				content += `>[!${userNote}] \n\n`;
-			}
+					if (
+						$(element).next().next().children("span").length ===
+							0 &&
+						!$(element).next().next().hasClass("sectionHeading") &&
+						$(element).next().next().length !== 0
+					) {
+						const userNote = $(element)
+							.next()
+							.next()
+							.next(".noteText")
+							.text()
+							.trim();
+						content += `>[!${userNote}] \n\n`;
+					}
 
-			content += "---\n\n";
-			highlightsCounter++;
-		});
+					content += "---\n\n";
+					highlightsCounter++;
+				}
+			});
 
 		const frontmatter = `---\nauthor: "[[${author}]]"\nhighlights: ${highlightsCounter}\n---\n`;
 
